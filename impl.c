@@ -2,17 +2,14 @@
 #define TRANSPOSE_IMPL
 #endif /* TRANSPOSE_IMPL */
 
-#ifdef NAIVE
-void transpose(int *src, int *dst, int w, int h)
+static void naive_transpose(int *src, int *dst, int w, int h)
 {
     for (int x = 0; x < w; x++)
         for (int y = 0; y < h; y++)
             *(dst + x * h + y) = *(src + y * w + x);
 }
-#endif
 
-#ifdef SSE
-void transpose(int *src, int *dst, int w, int h)
+static void sse_transpose(int *src, int *dst, int w, int h)
 {
     for (int x = 0; x < w; x += 4) {
         for (int y = 0; y < h; y += 4) {
@@ -35,10 +32,8 @@ void transpose(int *src, int *dst, int w, int h)
         }
     }
 }
-#endif
 
-#ifdef SSEPREFETCH
-void transpose(int *src, int *dst, int w, int h)
+static void sse_prefetch_transpose(int *src, int *dst, int w, int h)
 {
     for (int x = 0; x < w; x += 4) {
         for (int y = 0; y < h; y += 4) {
@@ -67,10 +62,8 @@ void transpose(int *src, int *dst, int w, int h)
         }
     }
 }
-#endif
 
-#ifdef AVX
-void transpose(int *src, int *dst, int w, int h)
+static void avx_transpose(int *src, int *dst, int w, int h)
 {
     for (int x = 0; x < w; x += 8) {
         for (int y = 0; y < h; y += 8) {
@@ -121,4 +114,3 @@ void transpose(int *src, int *dst, int w, int h)
         }
     }
 }
-#endif

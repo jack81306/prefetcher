@@ -21,7 +21,9 @@
 
 #include "impl.c"
 
-
+typedef struct Matrix {
+    void (*transpose)(int *, int *, int, int);
+} matrix;
 
 static long diff_in_us(struct timespec t1, struct timespec t2)
 {
@@ -42,13 +44,21 @@ int main()
         struct timespec start, end;
         int *src  = (int *) malloc(sizeof(int) * TEST_W * TEST_H);
         int *out = (int *) malloc(sizeof(int) * TEST_W * TEST_H);
-
+#ifdef AVX
+        matrix m= {.transpose=avx_transpose};
+#elif SSE
+        matrix m= {.transpose=sse_transpose};
+#elif SSEPREFETCH
+        matrix m= {.transpose=sse_prefetch_transpose};
+#else
+        matrix m= {.transpose=naive_transpose};
+#endif
         srand(time(NULL));
         for (int y = 0; y < TEST_H; y++)
             for (int x = 0; x < TEST_W; x++)
                 *(src + y * TEST_W + x) = rand();
         clock_gettime(CLOCK_REALTIME, &start);
-        transpose(src, out, TEST_W, TEST_H);
+        m.transpose(src, out, TEST_W, TEST_H);
         clock_gettime(CLOCK_REALTIME, &end);
         printf("%ld us\n", diff_in_us(start, end));
         free(src);
